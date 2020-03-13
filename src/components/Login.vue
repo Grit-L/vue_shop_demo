@@ -33,8 +33,8 @@
     return {
       // 登录表单绑定的数据
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       loginFormRules: {
         username: [
@@ -79,11 +79,12 @@
           const { data: res } = await this.$http.post('login', this.loginForm)
           // console.log(res)
           // 后端根据status判断是否成功登录
-          if (res.meta.status === 200) {
-            alert('登录成功!')
-          } else {
-            alert('登录失败!')
-          }
+          if (res.meta.status !== 200) return this.$message.error('登录失败,请重试!')
+          this.$message.success('登录成功!')
+          // 登录成功后把token保存到sessionStorage中，开启回话的时候才取
+          window.sessionStorage.setItem('token', res.data.token)
+          // 页面跳转到Home
+          this.$router.push('/home')
         } else {
           return false
         }
