@@ -7,7 +7,7 @@
       <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <!-- 卡片区域 -->
+    <!-- 列表卡片区域 -->
     <el-card>
       <!-- 分栏显示 -->
       <el-row :gutter="40">
@@ -28,6 +28,7 @@
       <!-- 数据列表渲染展示 -->
       <el-table :data="userlist" border>
         <el-table-column type="index" label="#"></el-table-column>
+        <!-- 获取列表数据 -->
         <el-table-column prop="username" label="姓名"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
         <el-table-column prop="mobile" label="电话"></el-table-column>
@@ -66,7 +67,7 @@
     </el-card>
 
     <!-- 添加加用户的对话框 -->
-    <el-dialog title="添加用户" :visible.sync="dialogVisible" width="50%" @close="addDialogReset">
+    <el-dialog title="添加用户" :visible.sync="dialogVisible" width="30%" @close="addDialogReset">
       <!-- 添加加用户 -->
       <el-form :model="addForm" :rules="formRules" ref="ruleFormRef" label-width="70px">
           <el-form-item label="用户名" prop="username">
@@ -88,7 +89,7 @@
       </span>
     </el-dialog>
     <!-- 编辑用户dialog页面 -->
-    <el-dialog title="提示" :visible.sync="editDialogVisible" width="50%" @close="editDialogReset">
+    <el-dialog title="提示" :visible.sync="editDialogVisible" width="30%" @close="editDialogReset">
       <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="70px">
           <el-form-item label="用户名" prop="username">
             <el-input v-model="editForm.username" disabled></el-input>
@@ -177,9 +178,11 @@
       }
     }
   },
+
   created () {
     this.getUserInfo()
   },
+
   methods: {
     // 获取用户数据并显示在列表 并保存到data中
     async getUserInfo () {
@@ -258,7 +261,7 @@
         // 增加到数据库
         const { data: res } = await this.$http.put('users/' + this.editForm.id, { email: this.editForm.email, mobile: this.editForm.mobile })
         // 添加用户失败 提示错误
-        console.log(res)
+        // console.log(res)
         if (res.meta.status !== 200) { return this.$message.error('用户信息修改失败') }
         // 添加成功提示语
         this.$message.success('用户信息修改成功')
@@ -278,7 +281,7 @@
       //  字符串 confirm表示成功删除
       //  字符串 cancle表示取消
       if (confirmResult !== 'confirm') {
-        return this.$message.info('已取消')
+        return this.$message.info('已取消删除')
       }
       const { data: res } = await this.$http.delete('users/' + id)
       if (res.meta.status !== 200) {

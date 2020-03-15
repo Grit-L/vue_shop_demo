@@ -5,11 +5,13 @@ body,
     height: 100%;
     margin: 0;
     padding: 0;
+    /*设置最小分辨率 图标不会变形*/
+    min-width: 1366px;
 }
 
 .el-breadcrumb {
     margin: 15px;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .el-card {
@@ -19,4 +21,5 @@ body,
 
 .el-table {
   margin-top: 15px;
+    font-size: 14px;
 }
