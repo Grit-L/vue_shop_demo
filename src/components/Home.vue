@@ -17,7 +17,7 @@
                  active-text-color="#409eff" unique-opened
                  :collapse-transition="false" :collapse=iscollapse router :default-active="activePath" >
           <!--  一级菜单  -->
-          <!--   动态接收数值‘:’数值转字符串+“”-->
+          <!--   动态接收数值‘:’数值转字符串+“”  -->
           <el-submenu :index="item.id + ''" v-for="item in menulist" :key="item.id">
             <template slot="title">
               <!--  图标  -->
@@ -40,6 +40,7 @@
       </el-aside>
       <!--  内容区  -->
       <el-main>
+        <!-- 路由占位符 -->
         <router-view></router-view>
       </el-main>
     </el-container>
@@ -68,7 +69,7 @@
   // 定义一个生命周期函数
   created () {
     this.getMenuItem()
-    // this.activePath = window.sessionStorage.getItem('active')
+    this.activePath = window.sessionStorage.getItem('active')
   },
   methods: {
     logOut () {
@@ -131,13 +132,11 @@
   .el-aside {
     background: rgb(51, 55, 68);
     /*修改二级菜单突出*/
-
     .el-menu {
       border-right: none;
     }
 
     /*设置展开折叠按钮的样式*/
-
     .collapsed {
       background-color: #4a5064;
       text-align: center;
