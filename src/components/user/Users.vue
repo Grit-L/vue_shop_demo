@@ -53,7 +53,7 @@
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="delUserInfo(scope.row.id)"></el-button>
             <!-- 鼠标移到按钮上显示提示文字 -->
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+              <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRoleDailog(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -69,7 +69,7 @@
     <!-- 添加加用户的对话框 -->
     <el-dialog title="添加用户" :visible.sync="dialogVisible" width="30%" @close="addDialogReset">
       <!-- 添加加用户 -->
-      <el-form :model="addForm" :rules="formRules" ref="ruleFormRef" label-width="70px">
+      <el-form :model="addForm" :rules="addformRules" ref="ruleFormRef" label-width="70px">
           <el-form-item label="用户名" prop="username">
             <el-input v-model="addForm.username"></el-input>
           </el-form-item>
@@ -104,6 +104,29 @@
       <span slot="footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="editCommitUserInfo">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 给用户分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="setRoleDialogVisible" width="30%" @close="setRoleDailogReset">
+      <el-form ref="form" :model="ueserInfo" label-width="80px">
+        <el-form-item label="当前用户">
+          <el-input v-model="ueserInfo.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="当前角色">
+          <el-input v-model="ueserInfo.role_name" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="分配角色" >
+          <!--  选择框  -->
+          <el-select v-model="selectRoleId" placeholder="请选择角色">
+          <el-option v-for="item in roleInfoList" :key="item.id"
+                     :label="item.roleName" :value="item.id">
+          </el-option>
+        </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="chooseRole">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -145,8 +168,10 @@
       total: 0,
       // 关闭dialog属性
       dialogVisible: false,
-      // 编辑dialog开关属性
+      // 编辑dialog属性
       editDialogVisible: false,
+      // 分配权限dialog
+      setRoleDialogVisible: false,
       // 添加的用户数据
       addForm: {
         username: '',
@@ -157,7 +182,7 @@
       // 编辑dialog数据
       editForm: {},
       // 添加用户页面-输入框限制规则
-      formRules: {
+      addformRules: {
         username: [{ required: true, message: '请输入用户名称', trigger: 'blur' },
           { min: 3, max: 10, message: '用户名称长度在 3 到 10 个字符', trigger: 'blur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' },
@@ -175,7 +200,13 @@
           { validator: checkEmail, trigger: 'blur' }],
         mobile: [{ required: true, message: '请输入电话号码', trigger: 'blur' },
           { validator: checkPhone, trigger: 'blur' }]
-      }
+      },
+      // 当前要分配的用户信息
+      ueserInfo: {},
+      // 选中的角色信息
+      selectRoleId: '',
+      // 角色信息列表
+      roleInfoList: []
     }
   },
 
@@ -289,6 +320,34 @@
       }
       this.$message.success('删除成功')
       this.getUserInfo()
+    },
+    // 点击分配角色按钮
+    async setRoleDailog (userInfo) {
+      // 获取要分配的用户信息
+      this.ueserInfo = userInfo
+      // 获取角色信息
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) { return this.$message.error('获取角色数据失败') }
+      // 获取用户的角色信息
+      this.roleInfoList = res.data
+      this.setRoleDialogVisible = true
+    },
+    // 确定配置权限
+    async chooseRole () {
+      // 未选择角色 提示
+      if (!this.selectRoleId) { return this.$message.error('请选择角色') }
+      const { data: res } = await this.$http.put(`users/${this.ueserInfo.id}/role`, { rid: this.selectRoleId })
+      if (res.meta.status !== 200) { return this.$message.error('配置角色失败') }
+      this.$message.success('配置角色成功')
+      // 配置成功再重新获取列表数据
+      this.getUserInfo()
+      // 关闭dialog
+      this.setRoleDialogVisible = false
+    },
+    // 关闭dialog后 重置select框数据
+    setRoleDailogReset () {
+      this.selectRoleId = ''
+      this.ueserInfo = {}
     }
   }
 }

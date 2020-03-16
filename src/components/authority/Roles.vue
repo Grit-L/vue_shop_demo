@@ -97,10 +97,10 @@
         <!-- 树形控件 -->
         <el-tree :data="authorityTree" :props="treeProps"
                  show-checkbox default-expand-all node-key="id"
-                 :default-checked-keys="refKeys"></el-tree>
+                 :default-checked-keys="refKeys" ref="treeRef"></el-tree>
         <span slot="footer" class="dialog-footer">
           <el-button @click="authorDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="authorDialogVisible = false">确 定</el-button>
+          <el-button type="primary" @click="allotAuthority">确 定</el-button>
         </span>
       </el-dialog>
     </el-card>
@@ -152,7 +152,9 @@
         label: 'authName'
       },
       // 默认勾选的权限id值
-      refKeys: []
+      refKeys: [],
+      // 当前即将分配权限角色id
+      roleId: ''
     }
   },
 
@@ -272,11 +274,14 @@
 
     // 点击分配权限按钮 获取角色权限值
     async getAuthorityTree (role) {
+      // role是obj 响应的数据
+      // 获取角色id
+      this.roleId = role.id
       // 页面开启前加载数据
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) { return this.$message.error('获取权限数据失败') }
       this.authorityTree = res.data
-      console.log(this.authorityTree)
+      // console.log(this.authorityTree)
       // 获取节点ID
       this.getLeafKeys(role, this.refKeys)
       this.authorDialogVisible = true
@@ -294,6 +299,22 @@
     // 监听权限对话框
     getAuthorDialogReset () {
       this.refKeys = []
+    },
+    // 给角色配置权限
+    async allotAuthority () {
+      const rKeys = [
+        // ... 展开式
+        ...this.$refs.treeRef.getCheckedKeys(),
+        ...this.$refs.treeRef.getHalfCheckedKeys()
+      ]
+      // 权限id列表转为字符串
+      const idStr = rKeys.join(',')
+      // 发送配置权限请求
+      const { data: res } = await this.$http.post(`roles/${this.roleId}/rights`, { rids: idStr })
+      if (res.meta.status !== 200) { return this.$message.error('配置权限失败') }
+      this.$message.success('配置权限成功')
+      this.getRolesList()
+      this.authorDialogVisible = false
     }
   }
 }
