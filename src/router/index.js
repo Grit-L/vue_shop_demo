@@ -6,6 +6,9 @@ import Welcome from '../components/Welcome'
 import Users from '../components/user/Users'
 import Authority from '../components/authority/Authority'
 import Roles from '../components/authority/Roles'
+import Category from '../components/goods/Category'
+import CateList from '../components/goods/List'
+import CateParams from '../components/goods/Params'
 
 Vue.use(VueRouter)
 
@@ -26,7 +29,10 @@ const routes = [
     children: [{ path: '/welcome', component: Welcome },
       { path: '/users', component: Users },
       { path: '/rights', component: Authority },
-      { path: '/roles', component: Roles }
+      { path: '/roles', component: Roles },
+      { path: '/categories', component: Category },
+      { path: '/goods', component: CateList },
+      { path: '/params', component: CateParams }
     ]
   }
 ]

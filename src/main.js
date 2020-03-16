@@ -3,6 +3,8 @@ import App from './App.vue'
 import router from './router'
 import './plugins/element.js'
 import './assets/css/globle.css'
+// 导入vue-table
+import tableTree from 'vue-table-with-tree-grid'
 // 导入图标样式表
 import './assets/fonts/iconfont.css'
 import axios from 'axios'
@@ -18,6 +20,8 @@ axios.interceptors.request.use(config => {
 Vue.prototype.$http = axios
 // 阻止 vue 在启动时生成生产提示
 Vue.config.productionTip = false
+
+Vue.component('tree-table', tableTree)
 
 new Vue({
   router,

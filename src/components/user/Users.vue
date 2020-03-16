@@ -155,7 +155,8 @@
       callback(new Error('请输入合法电话号码！'))
     }
     return {
-      // 创建一个获取用户信息的参数对象
+      // 创建一个获取用户信息的
+      // 查询参数对象
       getUserObj: {
         // 搜索
         query: '',
