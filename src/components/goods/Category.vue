@@ -211,7 +211,7 @@
         this.addCateForm.cat_pid = 0
         this.addCateForm.cat_level = 0
       }
-      console.log(this.addCateForm.cat_level)
+      // console.log(this.addCateForm.cat_level)
     },
     // 编辑商品类别 根据ID查询
     async editCategoryDialog (id) {
