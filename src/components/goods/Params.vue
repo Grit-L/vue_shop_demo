@@ -4,7 +4,7 @@
     <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/welcome' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>商品管理</el-breadcrumb-item>
-      <el-breadcrumb-item>商品列表</el-breadcrumb-item>
+      <el-breadcrumb-item>分类参数</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 主体区 -->
     <el-card>
@@ -71,7 +71,11 @@
               </template>
             </el-table-column>
             <!--  序列号 -->
-            <el-table-column type="index" label="#"></el-table-column>
+            <el-table-column type="index" label="#">
+              <template slot-scope="scope">
+                <span>{{(goodsQuery.pagenum - 1) * goodsQuery.pagesize + scope.$index + 1}}</span>
+              </template>
+            </el-table-column>
             <el-table-column prop="attr_name" label="属性名称"></el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">

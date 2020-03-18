@@ -27,7 +27,11 @@
 
       <!-- 数据列表渲染展示 -->
       <el-table :data="userlist" border>
-        <el-table-column type="index" label="#"></el-table-column>
+        <el-table-column type="index" label="#">
+          <template slot-scope="scope">
+            <span>{{(getUserObj.pagenum - 1) * getUserObj.pagesize + scope.$index + 1}}</span>
+          </template>
+        </el-table-column>
         <!-- 获取列表数据 -->
         <el-table-column prop="username" label="姓名"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
