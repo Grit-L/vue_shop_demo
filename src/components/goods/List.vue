@@ -34,9 +34,11 @@
           <template slot-scope="scope">{{scope.row.add_time | dateFormat}}</template>
         </el-table-column>
         <el-table-column label="操作" width="140">
-          <template>
+          <template v-slot="scope">
+            <!-- 编辑按钮 -->
             <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <!-- 删除按钮 -->
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delGoods(scope.row)"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -96,9 +98,30 @@
       this.goodsQuery.pagenum = newPage
       this.getGoodDatasList()
     },
-    // 点击增加商品
+    // 点击增加商品按钮 跳转到添加商品页面
     addGoods () {
-      this.addDialogVisible = true
+      this.$router.push('goods/add')
+    },
+    // 删除商品
+    async delGoods (row) {
+      // 判断是不是点击确定
+      const confirmResult = await this.$confirm('此操作将永久删除该商品, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(err => err)
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消')
+      }
+      // 点击确定发起请求
+      const { data: res } = await this.$http.delete(`goods/${row.goods_id}`)
+      // 是否请求成功
+      console.log(res.meta.status)
+      if (res.meta.status !== 200) { return this.$message.error('删除商品失败') }
+      // 请求成功 提示成功
+      this.$message.success('删除商品成功')
+      // 重新获取列表数据
+      this.getGoodDatasList()
     }
   }
 }

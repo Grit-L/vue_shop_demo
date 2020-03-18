@@ -28,5 +28,9 @@ body,
 .el-cascader-menu {
     height: 300px;
 }
+/*步骤条全局样式*/
+.el-step__title {
+    font-size: 14px;
+}
 
 
