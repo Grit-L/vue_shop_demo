@@ -3,7 +3,7 @@ import {
   Button, Form, FormItem, Input, Message, Container, Header, Aside, Main,
   Menu, Submenu, MenuItem, Breadcrumb, BreadcrumbItem, Row, Col, Card, Table, TableColumn,
   Switch, Tooltip, Pagination, Dialog, MessageBox, Tag, Tree, Select, Option, Cascader,
-  Alert, Tabs, TabPane, Steps, Step
+  Alert, Tabs, TabPane, Steps, Step, CheckboxGroup, Checkbox, Upload
 } from 'element-ui'
 
 Vue.use(Button)
@@ -38,6 +38,9 @@ Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Steps)
 Vue.use(Step)
+Vue.use(CheckboxGroup)
+Vue.use(Checkbox)
+Vue.use(Upload)
 
 // 挂载到全局中，用this调用
 Vue.prototype.$message = Message

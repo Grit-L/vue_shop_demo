@@ -18,10 +18,12 @@
       </p>
       <!-- 参数列表  -->
       <el-tabs v-model="activeName" @tab-click="handleClick">
+        <!-- 动态参数tab页 -->
         <el-tab-pane label="动态参数" name="many">
-          <!--  按钮 -->
+          <!--  按钮-增加动态参数  -->
           <el-button size="mini" type="primary" :disabled="isBtnDisabled"
-                     @click="addDialogVisible = true">添加参数</el-button>
+                     @click="addDialogVisible = true">添加参数
+          </el-button>
           <!--  列表区 -->
           <el-table :data="paramsDataList" style="width: 100%">
             <!-- 拓展按钮 -->
@@ -29,12 +31,13 @@
               <template slot-scope="scope">
                 <!--   参数tag标签  -->
                 <el-tag v-for="(item,i) in scope.row.attr_vals" :key="i"
-                        closable @close="handleClose(i,scope.row)" >{{item}}</el-tag>
+                        closable @close="handleClose(i,scope.row)">{{item}}
+                </el-tag>
                 <!--  输入框 -->
-                <el-input  v-if="scope.row.inputVisible" v-model="scope.row.inputValue"
-                  ref="saveTagInput" size="small"
-                  @keyup.enter.native="handleInputConfirm(scope.row)"
-                  @blur="handleInputConfirm(scope.row)" style="width: 120px">
+                <el-input v-if="scope.row.inputVisible" v-model="scope.row.inputValue"
+                          ref="saveTagInput" size="small"
+                          @keyup.enter.native="handleInputConfirm(scope.row)"
+                          @blur="handleInputConfirm(scope.row)" style="width: 120px">
                 </el-input>
                 <el-button v-else size="small" @click="showInput(scope.row)">+ New Tag</el-button>
               </template>
@@ -44,16 +47,20 @@
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">
-                <el-button size="mini" type="primary" icon="el-icon-edit" @click="editParams(scope.row.attr_id)">编辑</el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" @click="delParams(scope.row.attr_id)">删除</el-button>
+                <el-button size="mini" type="primary" icon="el-icon-edit" @click="editParams(scope.row.attr_id)">编辑
+                </el-button>
+                <el-button size="mini" type="danger" icon="el-icon-delete" @click="delParams(scope.row.attr_id)">删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-tab-pane>
+        <!-- 静态属性tab页 -->
         <el-tab-pane label="静态属性" name="only">
-          <!-- 添加按钮-->
+          <!-- 按钮-增加静态属性 -->
           <el-button size="mini" type="primary" :disabled="isBtnDisabled"
-                     @click="addDialogVisible = true">添加属性</el-button>
+                     @click="addDialogVisible = true">添加属性
+          </el-button>
           <!-- 列表区 -->
           <el-table :data="paramsDataList" style="width: 100%">
             <!--  拓展按钮  -->
@@ -61,26 +68,27 @@
               <template slot-scope="scope">
                 <!--   参数tag标签  -->
                 <el-tag v-for="(item,i) in scope.row.attr_vals" :key="i"
-                        closable >{{item}}</el-tag>
+                        closable @close="handleClose(i,scope.row)">{{item}}
+                </el-tag>
                 <!--  输入框 -->
                 <el-input v-if="scope.row.inputVisible" v-model="scope.row.inputValue"
-                  ref="saveTagInput" size="small"
-                  @keyup.enter.native="handleInputConfirm"
-                  @blur="handleInputConfirm" style="width: 120px">
+                          ref="saveTagInput" size="small"
+                          @keyup.enter.native="handleInputConfirm(scope.row)"
+                          @blur="handleInputConfirm(scope.row)" style="width: 120px">
                 </el-input>
+                <el-button v-else size="small" @click="showInput(scope.row)">+ New Tag</el-button>
               </template>
             </el-table-column>
             <!--  序列号 -->
             <el-table-column type="index" label="#">
-              <template slot-scope="scope">
-                <span>{{(goodsQuery.pagenum - 1) * goodsQuery.pagesize + scope.$index + 1}}</span>
-              </template>
             </el-table-column>
             <el-table-column prop="attr_name" label="属性名称"></el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">
-                <el-button size="mini" type="primary" icon="el-icon-edit" @click="editParams(scope.row.attr_id)">编辑</el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" @click="delParams(scope.row.attr_id)">删除</el-button>
+                <el-button size="mini" type="primary" icon="el-icon-edit" @click="editParams(scope.row.attr_id)">编辑
+                </el-button>
+                <el-button size="mini" type="danger" icon="el-icon-delete" @click="delParams(scope.row.attr_id)">删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -146,15 +154,33 @@
       // 增加dialog 参数规则校验
       addFormRules: {
         attr_name: [
-          { required: true, message: '请输入参数值', trigger: 'blur' },
-          { min: 2, max: 10, message: '长度在 2 到 10个字符', trigger: 'blur' }
+          {
+            required: true,
+            message: '请输入参数值',
+            trigger: 'blur'
+          },
+          {
+            min: 2,
+            max: 10,
+            message: '长度在 2 到 10个字符',
+            trigger: 'blur'
+          }
         ]
       },
       // 编辑dialog 参数规则校验
       editFormRules: {
         attr_name: [
-          { required: true, message: '请输入参数值', trigger: 'blur' },
-          { min: 2, max: 10, message: '长度在 2 到 10个字符', trigger: 'blur' }
+          {
+            required: true,
+            message: '请输入参数值',
+            trigger: 'blur'
+          },
+          {
+            min: 2,
+            max: 10,
+            message: '长度在 2 到 10个字符',
+            trigger: 'blur'
+          }
         ]
       }
     }
@@ -204,12 +230,19 @@
     addParams () {
       this.$refs.addFormRef.validate(async (valid) => {
         // 输入值预校验
-        if (!valid) { return this.$message.error('请输入有效参数') }
+        if (!valid) {
+          return this.$message.error('请输入有效参数')
+        }
         // 输入合法 发送请求
         const { data: res } = await this.$http.post(`categories/${this.cate_id}/attributes`,
-          { attr_name: this.addForm.attr_name, attr_sel: this.activeName })
+          {
+            attr_name: this.addForm.attr_name,
+            attr_sel: this.activeName
+          })
         console.log(res.meta.status)
-        if (res.meta.status !== 201) { return this.$message.error('增加参数失败') }
+        if (res.meta.status !== 201) {
+          return this.$message.error('增加参数失败')
+        }
         this.$message.success('增加参数成功')
         // 重新获取数据
         this.getParamsList()
@@ -225,7 +258,9 @@
     async editParams (id) {
       const { data: res } = await this.$http.get(`categories/${this.cate_id}/attributes/${id}`,
         { params: { attr_sel: this.activeName } })
-      if (res.meta.status !== 200) { return this.$message.error('获取数据失败') }
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取数据失败')
+      }
       this.editForm = res.data
       // 打开编辑dialog
       this.editDialogVisible = true
@@ -233,12 +268,16 @@
     // 提交编辑编辑
     editConfirmParams () {
       this.$refs.editFormRef.validate(async (valid) => {
-        if (!valid) { return this.$message.error('请输入合法参数名') }
+        if (!valid) {
+          return this.$message.error('请输入合法参数名')
+        }
         const { data: res } = await this.$http.put(`categories/${this.cate_id}/attributes/${this.editForm.attr_id}`, {
           attr_sel: this.activeName,
           attr_name: this.editForm.attr_name
         })
-        if (res.meta.status !== 200) { return this.$message.error('修改参数失败') }
+        if (res.meta.status !== 200) {
+          return this.$message.error('修改参数失败')
+        }
         this.$message.success('修改参数成功')
         // 重新获取数据
         this.getParamsList()
@@ -286,7 +325,9 @@
         // 保存的是字符串，而row.attr_vals是列表
         attr_vals: row.attr_vals.join(',')
       })
-      if (res.meta.status !== 200) { return this.$message.error('修改参数项成功！') }
+      if (res.meta.status !== 200) {
+        return this.$message.error('修改参数项成功！')
+      }
       this.$message.success('修改参数项成功！')
     },
     // 删除列表参数
@@ -298,12 +339,16 @@
       }).catch(err => err)
       // 点击取消删除
       // console.log(confirmResult)
-      if (confirmResult !== 'confirm') { return this.$message.info('已取消') }
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消')
+      }
       // 发送删除请求
       // console.log(cate_id)
       const { data: res } = await this.$http.delete(`categories/${this.cate_id}/attributes/${id}`)
       console.log(res.meta.status)
-      if (res.meta.status !== 200) { return this.$message.error('删除参数失败') }
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除参数失败')
+      }
       this.$message.success('删除参数成功')
       // 重新获取数据
       this.getParamsList()
@@ -337,6 +382,7 @@
   .p {
     margin: 10px;
   }
+
   .el-tag {
     margin: 5px;
   }
