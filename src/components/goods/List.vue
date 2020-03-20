@@ -51,7 +51,7 @@
                    :page-size="goodsQuery.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total">
     </el-pagination>
     <!-- 编辑商品dialog区域 -->
-    <el-dialog title="编辑商品信息" :visible.sync="editDialogVisible" width="50%">
+    <el-dialog title="编辑商品信息" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
       <el-form :model="editGoodsForm" :rules="editGoodsFormRules" ref="editGoodsFormRef" label-width="100px">
         <el-form-item label="商品名称" prop="goods_name">
           <el-input v-model="editGoodsForm.goods_name"></el-input>
@@ -74,24 +74,31 @@
             </el-checkbox-group>
           </el-form-item>
         </el-form-item>
-        <!--  待开发 -->
-        <el-form-item label="商品介绍" prop="goods_introduce">
-          <el-input v-model="editGoodsForm.goods_introduce"></el-input>
+        <!--  待优化 图片删除和编辑图片显示问题 -->
+        <el-form-item label="商品图片" prop="pics">
+          <el-upload :action="uploadURL" :headers="headerObj" :on-preview="handlePreview"
+                     :on-remove="handleRemove" :file-list="fileList"
+                     multiple list-type="picture" :on-success="handleSuccess">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip" style="margin: 10px 0; font-size: 14px">只能上传jpg/png文件，且不超过500kb</div>
+            <!--            <img :src="path" v-for="(path,i) in pics" :key="i">-->
+          </el-upload>
         </el-form-item>
-        <!--  待开发 -->
-        <el-form-item label="商品图片">
-          <!--          <div class="block" v-for="pic in editGoodsForm.pics" :key="pic.pics_id">-->
-          <!--            <el-image-->
-          <!--              style="width: 100px; height: 100px"-->
-          <!--              :src=pic.pics_sma_url-->
-          <!--              :fit="fill"></el-image>-->
-          <!--          </div>-->
+        <!--  已完成 -->
+        <el-form-item label="商品介绍" prop="goods_introduce">
+          <!-- 富文本编辑器 -->
+          <quill-editor v-model="editGoodsForm.goods_introduce"></quill-editor>
         </el-form-item>
       </el-form>
+      <!-- 确定\取消 按钮 -->
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="editConfirmGoods">确 定</el-button>
       </span>
+    </el-dialog>
+    <!-- 图片预览dialog -->
+    <el-dialog title="图片预览" :visible.sync="editPicDialogVisible" width="50%">
+      <img :src="picPreviewPath" class="picStyle">
     </el-dialog>
   </div>
 </template>
@@ -108,6 +115,8 @@
       goodsList: [],
       //  列表总条数
       total: 0,
+      // 商品id
+      goodsId: '',
       // 编辑dialog是否可见
       editDialogVisible: false,
       // 编辑的商品数据
@@ -137,7 +146,20 @@
         goods_state: [{
           required: true
         }]
-      }
+      },
+      // 图片预览框是否可见
+      editPicDialogVisible: false,
+      // 图片上传服务器地址
+      uploadURL: 'http://127.0.0.1:8888/api/private/v1/upload',
+      // 设置上传图片header
+      headerObj: {
+        Authorization: window.sessionStorage.getItem('token')
+      },
+      // 预览图片的路径
+      picPreviewPath: '',
+      // 图片的相对路径
+      temPath: '',
+      fileList: []
     }
   },
   created () {
@@ -175,18 +197,97 @@
       if (res.meta.status !== 200) {
         return this.$message.error('获取商品数据失败')
       }
-      // 把参数分割
+      // 获取商品动态参数和属性 把参数分割转成列表
       // JSON.parse(JSON.stringify(obj))我们一般用来深拷贝，其过程说白了
       // 就是利用JSON.stringify 将js对象序列化（JSON字符串），再使用JSON.parse来反序列化(还原)js对象
       res.data.attrs = JSON.parse(JSON.stringify(res.data.attrs))
       res.data.attrs.forEach(item => {
         item.attr_vals = item.attr_vals.split(',')
       })
-      // console.log(res.data.attrs)
+      // 获取图片的url 利用file-list参数展示
+      // 当列表为空时 push地址 不然点击编辑按钮每次都会增加图片
+      if (this.fileList.length === 0) {
+        res.data.pics.forEach(item => {
+          const picInfomation = { name: item.pics_id, url: item.pics_mid_url }
+          this.fileList.push(picInfomation)
+        })
+      }
+      // console.log(this.fileList.length)
       this.editDialogVisible = true
       this.editGoodsForm = res.data
+      // console.log(this.editGoodsForm.goods_id)
+      console.log(this.editGoodsForm.pics)
     },
-    // 编辑商品信息
+    // 编辑提交商品信息
+    editConfirmGoods () {
+      // 预校验
+      this.$refs.editGoodsFormRef.validate(async (valid) => {
+        if (!valid) { return this.$message.error('请填写必选项') }
+        // 处理动态参数
+        // this.manyData.forEach(item => {
+        //   const newInfo = {
+        //     attr_id: item.attr_id,
+        //     // 数组转为字符串
+        //     attr_value: item.attr_vals.join(',')
+        //   }
+        //   this.editGoodsForm.attrs.push(newInfo)
+        // })
+        // // 处理静态参数
+        // this.onlyData.forEach(item => {
+        //   const newInfo = {
+        //     attr_id: item.attr_id,
+        //     attr_value: item.attr_vals
+        //   }
+        //   this.editGoodsForm.attrs.push(newInfo)
+        // })
+        // 发起请求
+        const { data: res } = await this.$http.put('goods/' + this.editGoodsForm.goods_id, this.editGoodsForm)
+        // 判断是否发送成功
+        // console.log(res.meta.status)
+        if (res.meta.status !== 200) { return this.$message.error('编辑商品失败') }
+        this.$message.success('编辑商品成功')
+        // 重新获取列表数据
+        this.getGoodDatasList()
+        // 关闭编辑dialog
+        this.editDialogVisible = false
+      })
+    },
+    // 关闭编辑页面，重置数据
+    editDialogClosed () {
+      this.$refs.editGoodsFormRef.resetFields()
+      // 重置图片列表
+      this.fileList = []
+    },
+    // 图片上传成功
+    handleSuccess (response) {
+      this.$message.success('图片上传成功')
+      // 1.拼接得到一个图片信息对象 临时路径
+      const picInfo = { pic: response.data.tmp_path }
+      // 2.将图片信息对象，push到pics数组中 存到editGoodsForm中
+      this.editGoodsForm.pics.push(picInfo)
+      console.log(this.editGoodsForm.pics)
+      console.log(this.editGoodsForm)
+    },
+    // 图片预览
+    handlePreview (file) {
+      // console.log(file.url)
+      // 获取图片的路径
+      this.picPreviewPath = file.url
+      // 打开预览框
+      this.editPicDialogVisible = true
+    },
+    // 删除图片
+    handleRemove (file, fileList) {
+      console.log(file.url)
+      console.log('这是list' + fileList)
+      // 1.获取将要删除图片的路径
+      const filePath = file.url
+      // 2.从pics数组中，找到图片对应的索引值
+      const i = this.editGoodsForm.pics.findIndex(x => x.pics_mid_url === filePath)
+      console.log(i)
+      // 3.调用splice方法，移除图片信息
+      this.editGoodsForm.pics.splice(i, 1)
+    },
     // 删除商品
     async delGoods (row) {
       // 判断是不是点击确定
@@ -217,5 +318,9 @@
 <style scoped>
   .el-checkbox {
     margin: 0 5px !important;
+  }
+
+  .picStyle {
+    width: 100%;
   }
 </style>
