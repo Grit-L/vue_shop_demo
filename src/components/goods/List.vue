@@ -74,7 +74,7 @@
             </el-checkbox-group>
           </el-form-item>
         </el-form-item>
-        <!--  待优化 图片删除和编辑图片显示问题 -->
+        <!--  已优化 图片删除和编辑图片显示问题 -->
         <el-form-item label="商品图片" prop="pics">
           <el-upload :action="uploadURL" :headers="headerObj" :on-preview="handlePreview"
                      :on-remove="handleRemove" :file-list="fileList"
@@ -223,23 +223,6 @@
       // 预校验
       this.$refs.editGoodsFormRef.validate(async (valid) => {
         if (!valid) { return this.$message.error('请填写必选项') }
-        // 处理动态参数
-        // this.manyData.forEach(item => {
-        //   const newInfo = {
-        //     attr_id: item.attr_id,
-        //     // 数组转为字符串
-        //     attr_value: item.attr_vals.join(',')
-        //   }
-        //   this.editGoodsForm.attrs.push(newInfo)
-        // })
-        // // 处理静态参数
-        // this.onlyData.forEach(item => {
-        //   const newInfo = {
-        //     attr_id: item.attr_id,
-        //     attr_value: item.attr_vals
-        //   }
-        //   this.editGoodsForm.attrs.push(newInfo)
-        // })
         // 发起请求
         const { data: res } = await this.$http.put('goods/' + this.editGoodsForm.goods_id, this.editGoodsForm)
         // 判断是否发送成功
