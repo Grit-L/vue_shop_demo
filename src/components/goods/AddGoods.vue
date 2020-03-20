@@ -37,10 +37,11 @@
                         onkeyup="this.value=this.value.replace(/[^\d.]/g,'')"></el-input>
             </el-form-item>
             <el-form-item label="商品重量" prop="goods_weight">
-              <el-input v-model="addGoodsForm.goods_weight"></el-input>
+              <el-input v-model="addGoodsForm.goods_weight" ></el-input>
             </el-form-item>
             <el-form-item label="商品数量" prop="goods_number">
-              <el-input v-model="addGoodsForm.goods_number"></el-input>
+              <el-input v-model="addGoodsForm.goods_number" maxlength="9"
+                        onkeyup="this.value=this.value.replace(/[^\d.]/g,'')"></el-input>
             </el-form-item>
             <el-form-item label="商品分类" prop="goods_cat">
               <el-cascader v-model="addGoodsForm.goods_cat" :options="cateList"
@@ -74,7 +75,12 @@
               </div>
             </el-upload>
           </el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本编辑器 -->
+            <quill-editor v-model="addGoodsForm.goods_introduce"></quill-editor>
+            <!-- 添加商品按钮 -->
+            <el-button type="primary" class="btnAdd" @click="addGoods">添加商品</el-button>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
@@ -86,11 +92,15 @@
   </div>
 </template>
 
-<script>export default {
+<script>
+import _ from 'loadsh'
+
+export default {
   data () {
     return {
       // 点击tab与步骤绑定
       activeIndex: '0',
+      // 增加商品校验规则
       addGoodsFormRules: {
         goods_name: [
           {
@@ -193,6 +203,7 @@
     // 点击切换tab页面
     async tabClickChange () {
       switch (this.activeIndex) {
+        // 商品参数页
         case '1': {
           const { data: res } = await this.$http.get(`categories/${this.cateId}/attributes`, {
             params: { sel: 'many' }
@@ -208,6 +219,7 @@
           this.manyData = res.data
           break
         }
+        // 商品属性页
         case '2': {
           const { data: res } = await this.$http.get(`categories/${this.cateId}/attributes`, {
             params: { sel: 'only' }
@@ -215,20 +227,10 @@
           if (res.meta.status !== 200) {
             return this.$message.error('获取商品参数失败')
           }
-          // 先把字符串转为列表
-          res.data.forEach(item => {
-            item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(',')
-          })
           console.log(res.data)
           this.onlyData = res.data
           break
         }
-        case '3':
-          console.log('这是第3页')
-          break
-        case '4':
-          console.log('这是第4页')
-          break
       }
     },
     // 上传成功
@@ -256,6 +258,41 @@
       console.log(file.response.data.url)
       //  打开预览框
       this.picDialogVisible = true
+    },
+    // 增加商品
+    addGoods () {
+      this.$refs.addGoodsFormRef.validate(async (valid) => {
+        // 校验规则
+        if (!valid) { return this.$message.error('请输入必填项') }
+        // 发送请求前：需对提交的表单进行处理goods_cat attrs
+        // this.addForm.goods_cat = this.addForm.goods_cat.join(',')
+        // 以上写法不对：级联选择器绑定的对象goods_cat要求是数组对象
+        // 解决办法: 包：lodash 方法（深拷贝）：cloneDeep(boj)
+        const form = _.cloneDeep(this.addGoodsForm)
+        form.goods_cat = form.goods_cat.join(',')
+        // 处理动态参数
+        this.manyData.forEach(item => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            // 数组转为字符串
+            attr_value: item.attr_vals.join(',')
+          }
+          this.addGoodsForm.attrs.push(newInfo)
+        })
+        // 处理静态参数
+        this.onlyData.forEach(item => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals
+          }
+          this.addGoodsForm.attrs.push(newInfo)
+        })
+        form.attrs = this.addGoodsForm.attrs
+        const { data: res } = await this.$http.post('goods', form)
+        if (res.meta.status !== 201) { return this.$message.error('添加商品失败') }
+        this.$message.success('添加商品成功')
+        this.$router.push('/goods')
+      })
     }
   },
   computed: {
@@ -276,5 +313,8 @@
 
   .imageWidth {
     width: 100%;
+  }
+  .btnAdd {
+    margin-top: 15px;
   }
 </style>
