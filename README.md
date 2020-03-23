@@ -1,24 +1,5 @@
-# vue_shop
+vue_shop 是vue前端项目
 
-## Project setup
-```
-npm install
-```
+vue_api_server 是api服务
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+具体api内容可查看接口文档
