@@ -40,8 +40,12 @@
         </el-table-column>
         <el-table-column label="操作" width="130px">
           <template>
-            <el-button size="mini" icon="el-icon-edit" type="primary"></el-button>
-            <el-button size="mini" icon="el-icon-location-information" type="success"></el-button>
+            <el-tooltip class="item" effect="dark" content="修改地址" placement="top">
+              <el-button size="mini" icon="el-icon-edit" type="primary" @click="editAddressDialog"></el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="查看物流" placement="top">
+              <el-button size="mini" icon="el-icon-location-information" type="success" @click="showProgressDialog"></el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -51,10 +55,40 @@
                      :page-size="orderQuery.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </el-card>
+    <!-- 编辑对话框 -->
+    <el-dialog title="修改地址" :visible.sync="addressDialogVisible" width="30%"
+      @close="addressDialogClosed">
+      <el-form :model="addressForm" :rules="addressFormRules" ref="addressFormRef"
+        label-width="100px">
+        <!--  级联选择框 -->
+        <el-form-item label="省市区/县" prop="address1">
+          <el-cascader v-model="addressForm.address1" :options="cityData" :props="{ expandTrigger: 'hover' }"></el-cascader>
+        </el-form-item>
+        <el-form-item label="详细地址" prop="address2">
+          <el-input v-model="addressForm.address2"></el-input>
+        </el-form-item>
+      </el-form>
+      <!--  按钮  -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addressDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addressDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 展示物流进度对话框 -->
+    <el-dialog title="查看物流进度" :visible.sync="progressDialogVisible" width="50%">
+      <!-- 时间线 -->
+      <el-timeline>
+        <el-timeline-item v-for="(activity, index) in progressInfo"
+           :key="index" :timestamp="activity.time" :color="activity.color">
+          {{activity.context}}
+        </el-timeline-item>
+      </el-timeline>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import cityData from './citydata.js'
 export default {
   data () {
     return {
@@ -67,7 +101,28 @@ export default {
         pagesize: 10
       },
       // 总订单数
-      total: 0
+      total: 0,
+      // 编辑对话框是否可见
+      addressDialogVisible: false,
+      // 编辑款信息
+      addressForm: {
+        address1: [],
+        address2: ''
+      },
+      // 表单规则
+      addressFormRules: {
+        address1: [
+          { required: true, message: '请选择省市区县', trigger: 'blur' }
+        ],
+        address2: [
+          { required: true, message: '请输入详细地址', trigger: 'blur' }
+        ]
+      },
+      cityData,
+      // 物流进度对话框
+      progressDialogVisible: false,
+      // 物流进度
+      progressInfo: []
     }
   },
   created () {
@@ -90,6 +145,30 @@ export default {
     handleCurrentChange (newPage) {
       this.orderQuery.pagenum = newPage
       this.getOrderList()
+    },
+    // 编辑页
+    editAddressDialog () {
+      this.addressDialogVisible = true
+    },
+    // 关闭编辑框
+    addressDialogClosed () {
+      this.$refs.addressFormRef.resetFields()
+    },
+    // 查看物流
+    async showProgressDialog () {
+      // 供测试的物流单号：1106975712662
+      const { data: res } = await this.$http.get('/kuaidi/1106975712662')
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取物流进度失败!')
+      }
+      res.data.forEach(item => {
+        // 给对象颜色增加属性
+        this.$set(item, 'color', '#0bbd87')
+        // console.log(item)
+      })
+      // console.log(res.data)
+      this.progressInfo = res.data
+      this.progressDialogVisible = true
     }
   }
 }
@@ -99,4 +178,7 @@ export default {
 .el-table {
   margin-bottom: 15px;
 }
+  .el-cascader {
+    width: 100%;
+  }
 </style>
