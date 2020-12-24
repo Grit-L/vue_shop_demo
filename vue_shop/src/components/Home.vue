@@ -8,6 +8,7 @@
       </div>
       <el-button type="info" @click="logOut">退出</el-button>
     </el-header>
+
     <el-container>
       <!--  左侧菜单  -->
       <!-- 根据是否缩放来展示大小 -->
@@ -38,6 +39,7 @@
           </el-submenu>
         </el-menu>
       </el-aside>
+
       <!--  内容区  -->
       <el-main>
         <!-- 路由占位符 -->

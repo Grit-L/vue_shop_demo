@@ -45,6 +45,7 @@ Vue.config.productionTip = false
 Vue.component('tree-table', tableTree)
 // 全局注册富文本编辑器
 Vue.use(VueQuillEditor)
+
 // 时间格式话 使用过滤器
 Vue.filter('dateFormat', function (origin) {
   const dt = new Date(origin)
